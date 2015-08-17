@@ -132,6 +132,11 @@ OAUTH_GITLAB_APP_SECRET=${OAUTH_GITLAB_APP_SECRET:-}
 OAUTH_BITBUCKET_API_KEY=${OAUTH_BITBUCKET_API_KEY:-}
 OAUTH_BITBUCKET_APP_SECRET=${OAUTH_BITBUCKET_APP_SECRET:-}
 
+OAUTH_AZURE_CLIENT_ID = ${OAUTH_AZURE_CLIENT_ID:-}
+OAUTH_AZURE_CLIENT_SECRET = ${OAUTH_AZURE_CLIENT_SECRET:-}
+OAUTH_AZURE_TENANT_ID = ${OAUTH_AZURE_TENANT_ID:-}
+OAUTH_AZURE_RESOURCE = ${OAUTH_AZURE_RESOURCE:-}
+
 case $GITLAB_HTTPS in
   true)
     OAUTH_SAML_ASSERTION_CONSUMER_SERVICE_URL=${OAUTH_SAML_ASSERTION_CONSUMER_SERVICE_URL:-https://${GITLAB_HOST}/users/auth/saml/callback}
@@ -588,6 +593,26 @@ if [[ -n ${OAUTH_BITBUCKET_API_KEY} && -n ${OAUTH_BITBUCKET_APP_SECRET} ]]; then
 else
   sudo -HEu ${GITLAB_USER} sed '/{{OAUTH_BITBUCKET_API_KEY}}/d' -i config/gitlab.yml
   sudo -HEu ${GITLAB_USER} sed '/{{OAUTH_BITBUCKET_APP_SECRET}}/d' -i config/gitlab.yml
+fi
+
+# azure
+if [[ -n ${OAUTH_AZURE_CLIENT_ID} && \
+      -n ${OAUTH_AZURE_CLIENT_SECRET} && \
+      -n ${OAUTH_AZURE_TENANT_ID} ]]; then
+  OAUTH_ENABLED=true
+  sudo -HEu ${GITLAB_USER} sed 's/{{OAUTH_AZURE_CLIENT_ID}}/'"${OAUTH_AZURE_CLIENT_ID}"'/' -i config/gitlab.yml
+  sudo -HEu ${GITLAB_USER} sed 's/{{OAUTH_AZURE_CLIENT_SECRET}}/'"${OAUTH_AZURE_CLIENT_SECRET}"'/' -i config/gitlab.yml
+  sudo -HEu ${GITLAB_USER} sed 's/{{OAUTH_AZURE_TENANT_ID}}/'"${OAUTH_AZURE_TENANT_ID}"'/' -i config/gitlab.yml
+  if [[ -n ${OAUTH_AZURE_RESOURCE} ]]; then
+    sudo -HEu ${GITLAB_USER} sed 's/{{OAUTH_AZURE_RESOURCE}}/'"${OAUTH_AZURE_RESOURCE}"'/' -i config/gitlab.yml
+  else
+    sudo -HEu ${GITLAB_USER} sed '/{{OAUTH_AZURE_RESOURCE}}/d' -i config/gitlab.yml
+  fi
+else
+  sudo -HEu ${GITLAB_USER} sed '/{{OAUTH_AZURE_CLIENT_ID}}/d' -i config/gitlab.yml
+  sudo -HEu ${GITLAB_USER} sed '/{{OAUTH_AZURE_CLIENT_SECRET}}/d' -i config/gitlab.yml
+  sudo -HEu ${GITLAB_USER} sed '/{{OAUTH_AZURE_TENANT_ID}}/d' -i config/gitlab.yml
+  sudo -HEu ${GITLAB_USER} sed '/{{OAUTH_AZURE_RESOURCE}}/d' -i config/gitlab.yml
 fi
 
 # saml
